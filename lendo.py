@@ -1,34 +1,40 @@
+# -*- coding: utf-8 -*-
 import xlrd
-from graphviz import Graph
-#----------------------------------------------------------------------
-def open_file(path):
-    """
-    Open and read an Excel file
-    """
-    book = xlrd.open_workbook(path, formatting_info = True)
-    # print number of sheets
-    print book.nsheets
-    # print sheet names
-    print book.sheet_names()
-    g = Graph(format='pdf')
-    # get the first worksheet
-    first_sheet = book.sheet_by_index(0)
-    num_cols = first_sheet.ncols
-    for row_idx in range(1, first_sheet.nrows):    # Iterate through rows
-    	for col_idx in range(1, num_cols):  # Iterate through columns
-    		cel_nome_linha = first_sheet.cell(row_idx, 0)
-    		cel_nome_coluna = first_sheet.cell(0, col_idx)
-    		cel_valor = first_sheet.cell(row_idx, col_idx)
-    		xfx = first_sheet.cell_xf_index(row_idx, col_idx)
-    		xf = book.xf_list[xfx]
-    		bgx = xf.background.pattern_colour_index
+import graphviz as Graph
+import networkx as nx
+
+
+#def geraGrafo(grafo, local):
+#    nx.write_dot(grafo, 'aaa.gv')
+
+"""
+Função <abrir_arquivo>: faz a leitura do arquivo xls com dados
+"""
+def abrirArquivo(local):
+    planilha = xlrd.open_workbook(local, formatting_info = True)
+    primeira_tabela = planilha.sheet_by_index(0)
+    numero_colunas = primeira_tabela.ncols
+    numero_linhas = primeira_tabela.nrows
+    G = nx.Graph() # Cria um novo grafo
+    for cel_linha in range(1, numero_linhas):
+    	for cel_coluna in range(1, numero_colunas):
+    		cel_nome_linha = primeira_tabela.cell(cel_linha, 0)
+    		cel_nome_coluna = primeira_tabela.cell(0, cel_coluna)
+    		cel_valor = primeira_tabela.cell(cel_linha, cel_coluna)
+    		cel_id = primeira_tabela.cell_xf_index(cel_linha, cel_coluna)
+    		cel_obj = planilha.xf_list[cel_id]
+    		cel_fundo = cel_obj.background.pattern_colour_index
     		if cel_valor.value != '':
-        		print('(%s, %s, %s, %s)' % (cel_nome_linha.value, cel_nome_coluna.value, cel_valor.value, bgx))
-        		g.edge(cel_nome_linha.value, cel_nome_coluna.value, label = '%s' % (cel_valor.value))
-    print(g.source)
-    g.render()
-    # read a row
-#----------------------------------------------------------------------
+        		#print('(%s, %s, %s, %s)' % (cel_nome_linha.value, cel_nome_coluna.value, cel_valor.value, cel_fundo))
+                    G.add_edge(cel_nome_linha.value, cel_nome_coluna.value, weight = cel_valor.value) # adiciona arestas ao grafo
+    return G
+
+def algoritmo_prim(grafo):
+    return nx.minimum_spanning_tree(grafo)
+    
 if __name__ == "__main__":
-    path = "dados.xls"
-    open_file(path)
+    local = "dados.xls"
+    grafo = abrirArquivo(local)
+    arvGeradoraMinima = algoritmo_prim(grafo)
+    print(sorted(arvGeradoraMinima.edges(data=True)))
+#   geraGrafo(arvGeradoraMinima, '')
