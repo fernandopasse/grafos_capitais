@@ -32,7 +32,7 @@ class Grafo:
         return True
 
     def renderiza_grafo(self, lugar_para_gerar, nome_grafo):
-        A = Graph(comment='The Round Table', filename=(lugar_para_gerar + 'Grafo.gv'), engine='dot')
+        A = Graph(comment=nome_grafo, filename=(lugar_para_gerar + 'Grafo.gv'), engine='dot')
         for aresta_A, aresta_B, dados_aresta in self.meuGrafo.edges_iter(data=True):
             peso_aresta = dict(('label', str(peso)) for _, peso in dados_aresta.items())
             A.edge(aresta_A, aresta_B, **peso_aresta)
